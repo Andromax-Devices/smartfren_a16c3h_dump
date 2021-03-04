@@ -1,0 +1,17 @@
+#!/bin/bash
+ 
+# modify for copy wapi cer file
+mount -o rw,remount,barrier=1 /system
+
+if [ ! -d /system/wifi/sdcard ]; then
+        mkdir -p /system/wifi/sdcard
+        chmod 755 /system/wifi/
+        chmod 755 /system/wifi/sdcard
+fi
+        cp /storage/sdcard0/*.cer /system/wifi/sdcard/
+        cp /storage/sdcard1/*.cer /system/wifi/sdcard/
+        chmod 755 /system/wifi/sdcard/*
+mount -o ro,remount,barrier=1 /system
+echo "copy wapi cer sucessfully"
+
+

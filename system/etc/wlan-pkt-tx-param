@@ -1,0 +1,38 @@
+#!/bin/bash
+LOG_TAG="wifi"
+LOG_NAME="${0}:"
+
+logi ()
+{
+  /system/bin/log -t $LOG_TAG -p e "$LOG_NAME $@"
+}
+
+# $1: wlan channel
+# $2: wlan tx power
+# $3: wlan tx rate
+CHANNEL=`getprop persist.sys.fccchannel`  #$1
+TX_POWER=`getprop persist.sys.fccpower`  #$2
+TX_RATE=`getprop persist.sys.fccrate` #$3
+
+
+echo 1 > sdcard/fccxxxx
+
+echo $CHANNEL
+echo $TX_POWER
+echo $TX_RATE
+
+rmmod wlan.ko
+insmod /system/lib/modules/pronto/pronto_wlan.ko con_mode=5
+lsmod
+echo "pkt mode:channel ${CHANNEL},power ${TX_POWER},rate ${TX_RATE}"
+echo "WLAN CTA TX ......"
+logi "rx:pkt mode:channel ${CHANNEL},power ${TX_POWER},rate ${TX_RATE}"
+iwpriv wlan0 ftm 1  #enter ftm test mode
+iwpriv wlan0 set_channel  ${CHANNEL} #13  
+iwpriv wlan0 ena_chain 2
+iwpriv wlan0 pwr_cntl_mode 1  
+iwpriv wlan0 set_txpower ${TX_POWER} #13
+iwpriv wlan0 set_txrate  ${TX_RATE} #11A_54_MBPS #11B_LONG_11_MBPS
+iwpriv wlan0 tx 1
+echo "WLAN CTA TX CMD end"
+logi "WLAN CTA TX CMD end"

@@ -1,0 +1,38 @@
+#!/bin/bash
+LOG_TAG="wifi"
+LOG_NAME="${0}:"
+
+logi ()
+{
+  /system/bin/log -t $LOG_TAG -p e "$LOG_NAME $@"
+}
+# $1: wlan channel
+# $2: wlan wf tx digital gain
+# $3: wlan wf tx rf gain
+CHANNEL=`getprop persist.sys.fccchannel`
+#WF_DIG_GAIN=$2
+#WF_RF_GAIN=$3
+ENABLE=`getprop persist.sys.fccscw.enable`
+
+if [ $ENABLE -ne 1 ];then
+echo "stop scw"
+logi "stop scw"
+iwpriv wlan0  tx_cw_rf_gen 0
+exit
+fi
+
+rmmod wlan.ko
+insmod /system/lib/modules/pronto/pronto_wlan.ko con_mode=5
+lsmod
+echo "WF mode:channel ${CHANNEL}"
+echo "WLAN CTA TX ......"
+logi "tx scw mode:channel ${CHANNEL}"
+iwpriv wlan0 ftm 1
+iwpriv wlan0 set_channel ${CHANNEL}
+iwpriv wlan0 ena_chain 2 
+iwpriv wlan0  set_tx_wf_gain 0 0 #digital gain -39~24 and rf gain  0~31 
+iwpriv wlan0  tx_cw_rf_gen 1
+logi "start tx scw"
+echo "WLAN CTA TX CMD end"
+
+

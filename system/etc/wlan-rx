@@ -1,0 +1,67 @@
+#!/system/bin/sh
+LOG_TAG="wifi"
+LOG_NAME="${0}:"
+CHANNEL=`getprop persist.sys.fccchannel_rx`
+RXON=`getprop persist.sys.wifi.rx.on`
+
+logi ()
+{
+  /system/bin/log -t $LOG_TAG -p e "$LOG_NAME $@"
+}
+
+logi "wifi rx version:1.0.5"
+
+get_rx_pktcnt ()
+{
+	setprop persist.sys.wifi.rx.cnt waiting
+	while true;
+	do
+#	iwpriv wlan0 clr_rxpktcnt 1
+	RXON=`getprop persist.sys.wifi.rx.on`
+	RXCNT=`getprop persist.sys.wifi.rx.cnt`
+#	logi "RXON: $RXON"
+#	logi "RXCNT: $RXCNT"
+	if [ $RXCNT = "get" ];then
+	    PKTCNT=`iwpriv wlan0 get_rxpktcnt`
+	    echo $PKTCNT > /sdcard/pkcnt
+	    cat /sdcard/pkcnt |grep -o "get_rxpktcnt:[0-9]*" > /sdcard/pkcnt2
+	    cat /sdcard/pkcnt2 |grep -o "[0-9]*[0-9]" > /sdcard/pkcnt3
+	    RXPKTCNT1=`cat /sdcard/pkcnt3`
+	    setprop persist.wifi.test.rxpktcnt $RXPKTCNT1
+	    logi "rx channel ${CHANNEL}"
+	    logi "wifi test rx get packet counter"
+	    logi "rx:$RXPKTCNT1"
+	    setprop persist.sys.wifi.rx.cnt waiting
+	    iwpriv wlan0 clr_rxpktcnt 1
+	fi
+	if [ $RXCNT = "reset" ];then
+	    iwpriv wlan0 clr_rxpktcnt 1
+	    setprop persist.wifi.test.rxpktcnt 0
+	    logi "wifi test rx reset packet counter"
+	    setprop persist.sys.wifi.rx.cnt waiting
+	    break;
+	fi
+	if [ $RXON != "on" ];then
+	    logi "wifi test rx exit"
+	    iwpriv wlan0 clr_rxpktcnt 1
+	    setprop persist.wifi.test.rxpktcnt 0
+	    break;
+	fi
+	done;
+}
+
+rmmod wlan.ko
+insmod /system/lib/modules/pronto/pronto_wlan.ko con_mode=5
+lsmod
+echo "channel ${CHANNEL}"
+echo "WLAN CTA RX ......"
+logi "rx channel ${CHANNEL}"
+iwpriv wlan0 ftm 1  
+iwpriv wlan0 set_channel ${CHANNEL}
+iwpriv wlan0 rx 0
+iwpriv wlan0 ena_chain 1 
+iwpriv wlan0 clr_rxpktcnt 1 
+iwpriv wlan0 rx 1
+#iwpriv wlan0 get_rxpktcnt
+
+get_rx_pktcnt

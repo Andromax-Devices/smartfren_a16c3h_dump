@@ -1,0 +1,14 @@
+# msm8909_x20_g151-user 5.1.1 LMY47V eng.root.20160518.205951 release-keys
+- manufacturer: haier
+- platform: msm8909
+- codename: A16C3H
+- flavor: msm8909_x20_g151-user
+- release: 5.1.1
+- id: LMY47V
+- incremental: eng.root.20160518.205951
+- tags: release-keys
+- fingerprint: Smartfren/A16C3H/A16C3H:5.1.1/LMY47V/YNC1TBS1ZM:user/release-keys
+- is_ab: false
+- brand: Smartfren
+- branch: msm8909_x20_g151-user-5.1.1-LMY47V-eng.root.20160518.205951-release-keys
+- repo: smartfren_a16c3h_dump
